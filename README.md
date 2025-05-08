@@ -1,6 +1,8 @@
 # Discord Mark-as-Read per server
 
-Got tired of using *shift+Esc* on PC, so made an easier version of it. This may violate Discord's TOS so is hosted here. Not tested on MacOS. ⚠️May break without notice.
+Got tired of pressing *shift+Esc* on PC every now and then, so made an easier version of it as a Chrome extension. This may violate Discord's TOS so is hosted here. Not tested on MacOS.
+
+⚠️May break without notice.
 
 ## Version
 
