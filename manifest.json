@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Discord Server-Mark-Read",
+    "version": "1.0",
+    "description": "Adds a \"Mark as Read\" button to the Discord web header",
+    "permissions": [
+        "scripting"
+    ],
+    "host_permissions": [
+        "https://discord.com/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://discord.com/channels/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ]
+}
