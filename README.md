@@ -18,7 +18,7 @@ Firefox: Worked for `142.0.1 (64-bit)`.
 
 ### Chrome
 
-1. Download this repo as zip, or download the release.
+1. Download the [release](https://github.com/eerieA/discord-mar/archive/refs/tags/v397720.zip).
 2. Unzip it.
 3. Go to `chrome://extensions/`.
 4. Enable "Developer mode" (top right).
