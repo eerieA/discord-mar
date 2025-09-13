@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Discord Mark as Read",
+  "version": "1.0",
+  "description": "Adds a 'Mark as Read' button in Discord channels.",
+  "icons": {
+    "512": "icon.jpg"
+  },
+  "permissions": ["activeTab", "scripting"],
+  "content_scripts": [
+    {
+      "matches": ["*://discord.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "discord-mark-as-read@ninja.com"
+    }
+  }
+}
