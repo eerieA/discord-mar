@@ -10,9 +10,9 @@ As such, both extensions may violate Discord's TOS, so they are hosted here. Not
 
 ## Version
 
-Chrome: Worked for `stable 397720 (d46a552) Build.`
+Firefox version works for stable 484664 (7291013) Build of Discord web app (around Dec 2025).
 
-Firefox: Worked for `142.0.1 (64-bit)`.
+Chrome version is behind, and does not work for the latest Discord web app yet.
 
 ## Installation
 
