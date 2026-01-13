@@ -1,39 +1,48 @@
-// The position of the button is all based on a version of Discord app where the
-// title bar structure is like this:
-//  <div data-windows="false" class="bar_*" ...>//
-//      <div class="title_*">
-//          <div class="title_*">
-//              <div class="icon_* guildIcon__*" ...>
-//                  ... </div>
-//              <div ...>
-//                  ...</div>
-//          </div>
-//      </div>
-//      <div class="leading_*"></div>
-//      <div class="trailing_*">
-//          ...
-//      </div>
-//  </div>
-// So if the structure changes, the selecting method will need to change.
+// This script injects a custom "Mark as Read" button into the Discord web app's
+// server title bar. The DOM structure of this area uses hashed class names, so element
+// selection is done via stable semantic substrings rather than full class names.
+//
+// Current relevant structure is like:
+//  ...
+//   <div class="*-bar">                     // Title bar container
+//     <div class="*-leading"></div>
+//     <div class="*-title">
+//       <div>
+//         <div class="*guildIcon*"></div>   // Server (guild) icon
+//         <div>Server Name</div>
+//       </div>
+//     </div>
+//     <div class="*-trailing">              // Right-side action buttons
+//       [Checkpoint] [Inbox] [Help] ...
+//     </div>
+//   </div>
+//  ...
+// If Discord changes these semantic class suffixes or restructures the title
+// bar hierarchy, the selectors and traversal logic will need to be updated.
+
 function injectButton() {
-    // Find the element with "guildIcon_*" unique selector
-    const guildIcon = document.querySelector('[class*="guildIcon_"]');
+    // Find the guild icon (still the most reliable anchor)
+    const guildIcon = document.querySelector('[class*="guildIcon"]');
     if (!guildIcon) return;
 
-    // Go up to the correct title bar ancestor
-    const bar = guildIcon.closest('[class*="bar_"]');
-    if (!bar || bar.querySelector('.mark-read-btn')) return;
-    
-    // Find the trailing section where buttons like Inbox/Help are placed
-    const trailing = bar.querySelector('.trailing_c38106');
-    if (!trailing || trailing.querySelector('#mark-as-read-btn')) return; // Avoid duplicates
+    // Find the title bar container
+    const bar = guildIcon.closest('[class*="-bar"]');
+    if (!bar) return;
+
+    // Avoid injecting multiple times
+    if (bar.querySelector('.mark-read-btn')) return;
+
+    // Find the trailing container (Inbox / Help area)
+    const trailing = bar.querySelector('[class*="-trailing"]');
+    if (!trailing) return;
 
     // Create the button
     const btn = document.createElement('button');
     btn.textContent = 'Mark as Read';
     btn.className = 'mark-read-btn';
-    btn.style = `
-        margin-left: 10px;
+
+    btn.style.cssText = `
+        margin-left: 8px;
         padding: 4px 8px;
         background-color: #5865F2;
         color: white;
@@ -41,15 +50,15 @@ function injectButton() {
         border-radius: 4px;
         font-size: 12px;
         cursor: pointer;
+        align-self: center;
     `;
 
     btn.onclick = () => {
         const ev = new KeyboardEvent('keydown', {
             key: 'Escape',
             code: 'Escape',
-            keyCode: 27, // Add keyCode
-            charCode: 0,  // Add charCode (often 0 for non-character keys)
-            which: 27,     // Add which (often the same as keyCode)
+            keyCode: 27,    // Add keyCode
+            which: 27,      // Add which (often the same as keyCode)
             shiftKey: true,
             bubbles: true,
             cancelable: true
@@ -57,8 +66,8 @@ function injectButton() {
         document.body.dispatchEvent(ev);
     };
 
-    // Append the button at the start of the "trailing" group
-    trailing.appendChild(btn);
+    // Insert before Help / Inbox buttons
+    trailing.prepend(btn);
 }
 
 // Observe for navigation changes
