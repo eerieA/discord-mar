@@ -1,48 +1,41 @@
-// This script injects a custom "Mark as Read" button into the Discord web app's
-// server title bar. The DOM structure of this area uses hashed class names, so element
-// selection is done via stable semantic substrings rather than full class names.
+// This content script injects a custom "Mark as Read" button into the Discord
+// web app’s server title bar. Discord’s DOM uses module-scoped, hashed class
+// names that change across builds, so the script avoids hard-coded selectors
+// and instead anchors to stable accessibility attributes.
 //
-// Current relevant structure is like:
-//  ...
-//   <div class="*-bar">                     // Title bar container
-//     <div class="*-leading"></div>
-//     <div class="*-title">
-//       <div>
-//         <div class="*guildIcon*"></div>   // Server (guild) icon
-//         <div>Server Name</div>
-//       </div>
-//     </div>
-//     <div class="*-trailing">              // Right-side action buttons
-//       [Checkpoint] [Inbox] [Help] ...
-//     </div>
-//   </div>
-//  ...
-// If Discord changes these semantic class suffixes or restructures the title
-// bar hierarchy, the selectors and traversal logic will need to be updated.
+// Current strategy:
+// - Anchor to the Inbox button via aria-label="Inbox", which has proven stable
+//   across Discord UI refactors.
+// - From the Inbox button, locate the enclosing title bar’s trailing action
+//   container (class prefix "trailing_").
+// - Inject a lightweight button into that container, guarding against
+//   duplicate insertion.
+//
+// Interaction model:
+// - Clicking the button simulates Discord’s native "Mark Server as Read"
+//   keyboard shortcut (Shift + Escape).
+// - The shortcut is dispatched as a realistic key lifecycle (keydown → keyup)
+//   on the window object, matching Discord’s state-based shortcut handling.
+//
+// Notes:
+// - Discord is a single-page application; navigation does not reload the page.
+//   A MutationObserver is required to re-inject the button on route changes.
 
 function injectButton() {
-    // Find the guild icon (still the most reliable anchor)
-    const guildIcon = document.querySelector('[class*="guildIcon"]');
-    if (!guildIcon) return;
+    // Anchor to inbox button to be a bit more future-proof
+    const inboxBtn = document.querySelector('[aria-label="Inbox"]');
+    if (!inboxBtn) return;
 
     // Find the title bar container
-    const bar = guildIcon.closest('[class*="-bar"]');
-    if (!bar) return;
+    const trailing = inboxBtn.closest('div[class^="trailing_"]');
+    if (!trailing || trailing.querySelector('.mark-read-btn')) return;
 
-    // Avoid injecting multiple times
-    if (bar.querySelector('.mark-read-btn')) return;
-
-    // Find the trailing container (Inbox / Help area)
-    const trailing = bar.querySelector('[class*="-trailing"]');
-    if (!trailing) return;
-
-    // Create the button
     const btn = document.createElement('button');
     btn.textContent = 'Mark as Read';
     btn.className = 'mark-read-btn';
 
     btn.style.cssText = `
-        margin-left: 8px;
+        margin-right: 8px;
         padding: 4px 8px;
         background-color: #5865F2;
         color: white;
@@ -50,23 +43,36 @@ function injectButton() {
         border-radius: 4px;
         font-size: 12px;
         cursor: pointer;
-        align-self: center;
     `;
 
     btn.onclick = () => {
-        const ev = new KeyboardEvent('keydown', {
+        // Ensure focus is inside the app
+        document.body.focus();
+
+        const down = new KeyboardEvent('keydown', {
             key: 'Escape',
             code: 'Escape',
-            keyCode: 27,    // Add keyCode
-            which: 27,      // Add which (often the same as keyCode)
+            keyCode: 27,
+            which: 27,
             shiftKey: true,
             bubbles: true,
             cancelable: true
         });
-        document.body.dispatchEvent(ev);
+
+        const up = new KeyboardEvent('keyup', {
+            key: 'Escape',
+            code: 'Escape',
+            keyCode: 27,
+            which: 27,
+            shiftKey: true,
+            bubbles: true,
+            cancelable: true
+        });
+
+        window.dispatchEvent(down);
+        window.dispatchEvent(up);
     };
 
-    // Insert before Help / Inbox buttons
     trailing.prepend(btn);
 }
 

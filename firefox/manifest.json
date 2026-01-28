@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Discord Mark as Read",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Adds a 'Mark as Read' button in Discord channels.",
   "icons": {
     "512": "icon.jpg"
